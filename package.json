@@ -1,0 +1,54 @@
+{
+  "name": "RSS-reader",
+  "version": "1.0.0",
+  "description": "RSS reader by asagafonov",
+  "main": "bin/rss.js",
+  "bin": {
+    "rss": "bin/rss.js"
+  },
+  "engines": {
+    "node": ">=14"
+  },
+  "type": "module",
+  "jest": {
+    "testEnvironment": "node",
+    "transform": {}
+  },
+  "scripts": {
+    "test": "npx -n --experimental-vm-modules jest",
+    "build": "webpack --config webpack.config.cjs"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/asagafonov/RSS-reader.git"
+  },
+  "keywords": [
+    "cli",
+    "rss",
+    "project"
+  ],
+  "author": "asagafonov",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/asagafonov/RSS-reader/issues"
+  },
+  "dependencies": {
+    "@jest/globals": "^26.6.1",
+    "bootstrap": "^4.5.3",
+    "jquery": "^3.5.1",
+    "popper.js": "^1.16.1",
+    "typescript": "^4.0.3"
+  },
+  "devDependencies": {
+    "eslint": "^6.8.0",
+    "eslint-config-airbnb-base": "^14.2.0",
+    "eslint-plugin-import": "^2.22.1",
+    "eslint-plugin-jest": "^23.20.0",
+    "html-webpack-plugin": "^5.0.0-alpha.7",
+    "jest": "^26.6.1",
+    "jest-cli": "^26.6.1",
+    "webpack": "^5.2.0",
+    "webpack-cli": "^4.1.0"
+  },
+  "homepage": "https://github.com/asagafonov/RSS-reader#readme"
+}
