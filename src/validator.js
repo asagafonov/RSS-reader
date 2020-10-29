@@ -11,7 +11,7 @@ export default () => {
   const state = {
     inputField: 'default',
     inputValue: '',
-  }
+  };
 
   const button = document.querySelector('button');
   button.disabled = true;
@@ -47,5 +47,5 @@ export default () => {
     if (watchedState.inputValue === '') {
       watchedState.inputField = 'default';
     }
-  })
+  });
 };
