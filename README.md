@@ -1,3 +1,5 @@
+### WORK IN PROGRESS
+
 ### Hexlet tests and linter status:
 ![Actions Status](https://github.com/asagafonov/RSS-reader/workflows/hexlet-check/badge.svg)
 
