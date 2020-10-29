@@ -1,1 +1,3 @@
-console.log('Hello, World!');
+import inputValidator from 'validator.js';
+
+inputValidator();
