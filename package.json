@@ -2,28 +2,24 @@
   "name": "RSS-reader",
   "version": "1.0.0",
   "description": "RSS reader by asagafonov",
-  "main": "src/index.js",
-  "bin": {
-    "rss": "bin/rss.js"
-  },
+  "main": "dist/main.js",
   "engines": {
     "node": ">=12"
   },
-  "type": "module",
   "jest": {
     "testEnvironment": "node",
     "transform": {}
   },
   "scripts": {
-    "test": "npx -n --experimental-vm-modules jest",
-    "build": "webpack --mode production"
+    "test": "npx jest",
+    "babel": "babel src -d dist",
+    "build": "webpack --mode=production"
   },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/asagafonov/RSS-reader.git"
   },
   "keywords": [
-    "cli",
     "rss",
     "project"
   ],
@@ -38,11 +34,17 @@
     "yup": "^0.29.3"
   },
   "devDependencies": {
+    "@babel/cli": "^7.12.1",
+    "@babel/core": "^7.12.3",
+    "@babel/polyfill": "^7.12.1",
+    "@babel/preset-env": "^7.12.1",
+    "babel-loader": "^8.1.0",
     "eslint": "^6.8.0",
     "eslint-config-airbnb-base": "^14.2.0",
     "eslint-plugin-import": "^2.22.1",
     "eslint-plugin-jest": "^23.20.0",
     "html-webpack-plugin": "^5.0.0-alpha.7",
+    "path": "^0.12.7",
     "webpack": "^5.3.1",
     "webpack-cli": "^4.1.0",
     "webpack-dev-server": "^3.11.0"
