@@ -5,13 +5,13 @@ module.exports = {
   entry: './src/index.js',
   output: {
     path: path.resolve(__dirname, 'dist'),
-    filename: 'main.js'
+    filename: 'main.js',
   },
   plugins: [
     new HtmlWebpackPlugin({
-      template: "./src/index.html",
-      filename: "./index.html"
-    })
+      template: './src/index.html',
+      filename: './index.html',
+    }),
   ],
   module: {
     rules:
@@ -22,11 +22,10 @@ module.exports = {
           use: {
             loader: 'babel-loader',
             options: {
-              presets: ['@babel/preset-env']
-            }
-          }
-        }
-      ]
+              presets: ['@babel/preset-env'],
+            },
+          },
+        },
+      ],
   },
-
 };
