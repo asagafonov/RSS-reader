@@ -1,10 +1,8 @@
 import onChange from 'on-change';
-import * as y from 'yup';
+import { string, object } from 'yup';
 
-const yup = !y.object ? y.default : y;
-
-const schema = yup.object().shape({
-  url: yup.string().required().url(),
+const schema = object().shape({
+  inputValue: string().required().url(),
 });
 
 export default () => {
@@ -19,17 +17,20 @@ export default () => {
 
   const watchedState = onChange(state, () => {
     if (state.inputField === 'invalid') {
-      input.classList.add('border border-danger');
+      input.classList.add('border');
+      input.classList.add('border-danger');
       button.setAttribute('aria-disabled', 'true');
       button.disabled = true;
     }
     if (state.inputField === 'valid') {
-      input.classList.remove('border border-danger');
+      input.classList.remove('border');
+      input.classList.remove('border-danger');
       button.removeAttribute('aria-disabled');
       button.disabled = false;
     }
     if (state.inputField === 'default') {
-      input.classList.remove('border border-danger');
+      input.classList.remove('border');
+      input.classList.remove('border-danger');
       button.setAttribute('aria-disabled', 'true');
       button.disabled = true;
     }
@@ -37,7 +38,7 @@ export default () => {
 
   input.addEventListener('input', (e) => {
     watchedState.inputValue = e.target.value;
-    const validation = schema.isValidSync(watchedState.inputValue, { abortEarly: false });
+    const validation = schema.isValidSync(watchedState);
     if (validation) {
       watchedState.inputField = 'valid';
     }
