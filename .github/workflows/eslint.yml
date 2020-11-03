@@ -1,5 +1,5 @@
 # Name of workflow
-name: Linter && tests
+name: Linter
 
 # Trigger the workflow on push or pull request
 on:
