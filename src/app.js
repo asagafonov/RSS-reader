@@ -126,11 +126,11 @@ export default () => {
       return;
     }
     watchedState.urls.push(url);
+    const urlViaProxy = `https://api.allorigins.win/get?url=${encodeURIComponent(url)}`;
     axios
-      .get(url)
+      .get(urlViaProxy)
       .then((response) => {
-        const rss = parseDOM(response.data, 'text/html');
-        console.log(rss);
+        const rss = parseDOM(response.data.contents, 'text/xml');
         watchedState.channels.push({
           id: url,
           title: rss.querySelector('channel > title').textContent,
