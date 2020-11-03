@@ -31,6 +31,7 @@
   "dependencies": {
     "axios": "^0.21.0",
     "bootstrap": "^4.5.3",
+    "lodash": "^4.17.20",
     "on-change": "^2.1.4",
     "yup": "^0.29.3"
   },
