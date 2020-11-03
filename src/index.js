@@ -1,3 +1,3 @@
-import inputValidator from './validator.js';
+import app from './app.js';
 
-inputValidator();
+app();
