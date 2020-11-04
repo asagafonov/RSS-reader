@@ -1,7 +1,17 @@
 import onChange from 'on-change';
 import axios from 'axios';
 import { string, object } from 'yup';
+import i18next from 'i18next';
+import en from './locales/index.js';
 import parseDOM from './parser.js';
+
+i18next.init({
+  lng: 'en',
+  debug: true,
+  resources: {
+    en,
+  },
+});
 
 const schema = object().shape({
   inputValue: string().required().url(),
@@ -76,7 +86,7 @@ export default () => {
       input.classList.add('border');
       input.classList.add('border-danger');
       input.classList.remove('border-success');
-      subline.textContent = 'Are you sure this is an RSS link?';
+      subline.textContent = i18next.t('validation.warning');
       subline.classList.add('text-danger');
       subline.classList.remove('text-success');
     }
@@ -86,7 +96,7 @@ export default () => {
       input.classList.add('border-success');
       input.classList.remove('border');
       input.classList.remove('border-danger');
-      subline.textContent = 'Looks like a valid RSS link. Now press add.';
+      subline.textContent = i18next.t('validation.success');
       subline.classList.add('text-success');
       subline.classList.remove('text-danger');
     }
@@ -122,7 +132,7 @@ export default () => {
     input.value = '';
     watchedState.input.inputField = 'default';
     if (watchedState.urls.includes(url)) {
-      alert('This feed has already been added!');
+      alert(i18next.t('alert.duplication'));
       return;
     }
     watchedState.urls.push(url);
@@ -140,7 +150,6 @@ export default () => {
         channelItems.forEach((item) => {
           const title = item.querySelector('title').textContent;
           const description = item.querySelector('description').textContent;
-          const id = item.querySelector('guid').textContent;
           const link = item.querySelector('link').textContent;
           watchedState.items.push({
             id: url,
@@ -150,6 +159,9 @@ export default () => {
           });
         });
       })
-      .catch((error) => console.log(error));
+      .catch((error) => {
+        console.log(error);
+        alert(i18next.t('alert.error'));
+      });
   });
 };
