@@ -107,6 +107,7 @@ export default () => {
       input.classList.remove('border-danger');
       input.classList.remove('border-success');
       subline.textContent = '';
+      input.value = state.input.inputValue;
     }
   });
 
@@ -129,8 +130,8 @@ export default () => {
   form.addEventListener('submit', (e) => {
     e.preventDefault();
     const url = watchedState.input.inputValue;
-    input.value = '';
     watchedState.input.inputField = 'default';
+    watchedState.input.inputValue = '';
     if (watchedState.urls.includes(url)) {
       alert(i18next.t('alert.duplication'));
       return;
@@ -161,6 +162,7 @@ export default () => {
       })
       .catch((error) => {
         console.log(error);
+        watchedState.urls = watchedState.urls.filter((el) => el !== url);
         alert(i18next.t('alert.error'));
       });
   });
