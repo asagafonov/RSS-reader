@@ -32,10 +32,13 @@ jobs:
       - name: npm install
         # Install and build project
         run: |
-          make build
+          make install
         # Add environment variables
         env:
           CI: true
+      - name: build
+        run: |
+          make build
       - name: Run linter
         # Run Linter
         run: |
