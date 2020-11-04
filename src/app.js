@@ -21,7 +21,7 @@ const renderFeeds = (state) => {
   const feedsContainer = document.getElementById('feeds');
   feedsContainer.innerHTML = '';
   const feedsTitle = document.createElement('h2');
-  feedsTitle.textContent = 'Feeds';
+  feedsTitle.textContent = i18next.t('pageContent.feeds');
   feedsContainer.append(feedsTitle);
   const feedsList = document.createElement('ul');
   feedsList.setAttribute('class', 'list-group mb-5');
@@ -42,7 +42,7 @@ const renderFeeds = (state) => {
   const postsContainer = document.getElementById('posts');
   postsContainer.innerHTML = '';
   const postsTitle = document.createElement('h2');
-  postsTitle.textContent = 'Posts';
+  postsTitle.textContent = i18next.t('pageContent.posts');
   postsContainer.append(postsTitle);
   const postsList = document.createElement('ul');
   postsList.setAttribute('class', 'list-group');
