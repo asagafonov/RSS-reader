@@ -18,46 +18,50 @@ const schema = object().shape({
 });
 
 const renderFeeds = (state) => {
-  const feedsContainer = document.getElementById('feeds');
-  feedsContainer.innerHTML = '';
-  const feedsTitle = document.createElement('h2');
-  feedsTitle.textContent = i18next.t('pageContent.feeds');
-  feedsContainer.append(feedsTitle);
-  const feedsList = document.createElement('ul');
-  feedsList.setAttribute('class', 'list-group mb-5');
-  feedsContainer.append(feedsList);
-  const feeds = state.channels;
-  feeds.forEach((feed) => {
-    const { title, description } = feed;
-    const h3 = document.createElement('h3');
-    h3.textContent = title;
-    const p = document.createElement('p');
-    p.textContent = description;
-    const li = document.createElement('li');
-    li.setAttribute('class', 'list-group-item');
-    li.append(h3);
-    li.append(p);
-    feedsList.append(li);
-  });
-  const postsContainer = document.getElementById('posts');
-  postsContainer.innerHTML = '';
-  const postsTitle = document.createElement('h2');
-  postsTitle.textContent = i18next.t('pageContent.posts');
-  postsContainer.append(postsTitle);
-  const postsList = document.createElement('ul');
-  postsList.setAttribute('class', 'list-group');
-  postsContainer.append(postsList);
-  const posts = state.items;
-  posts.forEach((post) => {
-    const { title, link } = post;
-    const a = document.createElement('a');
-    a.setAttribute('href', link);
-    a.textContent = title;
-    const li = document.createElement('li');
-    li.setAttribute('class', 'list-group-item');
-    li.append(a);
-    postsList.append(li);
-  });
+  if (state.channels.length !== 0) {
+    const feedsContainer = document.getElementById('feeds');
+    feedsContainer.innerHTML = '';
+    const feedsTitle = document.createElement('h2');
+    feedsTitle.textContent = i18next.t('pageContent.feeds');
+    feedsContainer.append(feedsTitle);
+    const feedsList = document.createElement('ul');
+    feedsList.setAttribute('class', 'list-group mb-5');
+    feedsContainer.append(feedsList);
+    const feeds = state.channels;
+    feeds.forEach((feed) => {
+      const { title, description } = feed;
+      const h3 = document.createElement('h3');
+      h3.textContent = title;
+      const p = document.createElement('p');
+      p.textContent = description;
+      const li = document.createElement('li');
+      li.setAttribute('class', 'list-group-item');
+      li.append(h3);
+      li.append(p);
+      feedsList.append(li);
+    });
+  }
+  if (state.items.length !== 0) {
+    const postsContainer = document.getElementById('posts');
+    postsContainer.innerHTML = '';
+    const postsTitle = document.createElement('h2');
+    postsTitle.textContent = i18next.t('pageContent.posts');
+    postsContainer.append(postsTitle);
+    const postsList = document.createElement('ul');
+    postsList.setAttribute('class', 'list-group');
+    postsContainer.append(postsList);
+    const posts = state.items;
+    posts.forEach((post) => {
+      const { title, link } = post;
+      const a = document.createElement('a');
+      a.setAttribute('href', link);
+      a.textContent = title;
+      const li = document.createElement('li');
+      li.setAttribute('class', 'list-group-item');
+      li.append(a);
+      postsList.append(li);
+    });
+  }
 };
 
 export default () => {
@@ -76,7 +80,7 @@ export default () => {
   const input = document.querySelector('input');
 
   const watchedState = onChange(state, (path) => {
-    if ((path.match(/^channels/) || path.match(/^items/)) && state.items.length !== 0) {
+    if ((path.match(/^channels/) || path.match(/^items/))) {
       renderFeeds(state);
     }
     const subline = document.getElementById('subline');
@@ -148,17 +152,21 @@ export default () => {
           description: rss.querySelector('channel > description').textContent,
         });
         const channelItems = rss.querySelectorAll('item');
+        const itemsToAdd = [];
         channelItems.forEach((item) => {
           const title = item.querySelector('title').textContent;
           const id = item.querySelector('guid').textContent;
           const link = item.querySelector('link').textContent;
-          watchedState.items.unshift({
+          itemsToAdd.push({
             channelId: url,
             id,
             title,
             link,
           });
         });
+        for(let i = itemsToAdd.length - 1; i > 0; i -= 1) {
+          watchedState.items.unshift(itemsToAdd[i]);
+        }
       })
       .catch((error) => {
         console.log(error);
@@ -166,6 +174,7 @@ export default () => {
         watchedState.channels = watchedState.channels.filter((el) => el.id !== url);
         watchedState.items = watchedState.items.filter((el) => el.channelId !== url);
         alert(i18next.t('alert.error'));
+        throw(error);
       });
   });
 
@@ -180,12 +189,12 @@ export default () => {
             .then((response) => {
               const rss = parseDOM(response.data.contents, 'text/xml');
               const items = rss.querySelectorAll('item');
-              const oldItems = state.items.map((item) => item.id);
+              const oldItemIds = state.items.map((item) => item.id);
               items.forEach((item) => {
                 const title = item.querySelector('title').textContent;
                 const id = item.querySelector('guid').textContent;
                 const link = item.querySelector('link').textContent;
-                if (!oldItems.includes(id)) {
+                if (!oldItemIds.includes(id)) {
                   watchedState.items.unshift({
                     channelId: url,
                     id,
@@ -195,7 +204,10 @@ export default () => {
                 }
               });
             })
-            .catch((err) => console.log(err));
+            .catch((err) => {
+              console.log(err);
+              throw(err);
+            });
         });
         setTimeout(() => handler(counter + 1), 5000);
       }
