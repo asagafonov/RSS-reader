@@ -164,7 +164,7 @@ export default () => {
             link,
           });
         });
-        for(let i = itemsToAdd.length - 1; i > 0; i -= 1) {
+        for (let i = itemsToAdd.length - 1; i > 0; i -= 1) {
           watchedState.items.unshift(itemsToAdd[i]);
         }
       })
@@ -174,7 +174,7 @@ export default () => {
         watchedState.channels = watchedState.channels.filter((el) => el.id !== url);
         watchedState.items = watchedState.items.filter((el) => el.channelId !== url);
         alert(i18next.t('alert.error'));
-        throw(error);
+        throw (error);
       });
   });
 
@@ -206,7 +206,7 @@ export default () => {
             })
             .catch((err) => {
               console.log(err);
-              throw(err);
+              throw (err);
             });
         });
         setTimeout(() => handler(counter + 1), 5000);
