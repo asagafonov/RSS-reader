@@ -76,7 +76,7 @@ export default () => {
   const input = document.querySelector('input');
 
   const watchedState = onChange(state, (path) => {
-    if (path.match(/^channels/) || path.match(/^items/)) {
+    if ((path.match(/^channels/) || path.match(/^items/)) && state.items.length !== 0) {
       renderFeeds(state);
     }
     const subline = document.getElementById('subline');
@@ -114,10 +114,10 @@ export default () => {
   input.addEventListener('input', (e) => {
     watchedState.input.inputValue = e.target.value;
     const validation = schema.isValidSync(watchedState.input);
-    if (validation && watchedState.input.inputValue.match(/rss/)) {
+    if (validation) {
       watchedState.input.inputField = 'valid';
     }
-    if (!validation || !watchedState.input.inputValue.match(/rss/)) {
+    if (!validation) {
       watchedState.input.inputField = 'invalid';
     }
     if (watchedState.input.inputValue === '') {
@@ -136,13 +136,13 @@ export default () => {
       alert(i18next.t('alert.duplication'));
       return;
     }
-    watchedState.urls.push(url);
+    watchedState.urls.unshift(url);
     const urlViaProxy = `https://api.allorigins.win/get?url=${encodeURIComponent(url)}`;
     axios
       .get(urlViaProxy)
       .then((response) => {
         const rss = parseDOM(response.data.contents, 'text/xml');
-        watchedState.channels.push({
+        watchedState.channels.unshift({
           id: url,
           title: rss.querySelector('channel > title').textContent,
           description: rss.querySelector('channel > description').textContent,
@@ -150,12 +150,12 @@ export default () => {
         const channelItems = rss.querySelectorAll('item');
         channelItems.forEach((item) => {
           const title = item.querySelector('title').textContent;
-          const description = item.querySelector('description').textContent;
+          const id = item.querySelector('guid').textContent;
           const link = item.querySelector('link').textContent;
-          watchedState.items.push({
-            id: url,
+          watchedState.items.unshift({
+            channelId: url,
+            id,
             title,
-            description,
             link,
           });
         });
@@ -163,7 +163,48 @@ export default () => {
       .catch((error) => {
         console.log(error);
         watchedState.urls = watchedState.urls.filter((el) => el !== url);
+        watchedState.channels = watchedState.channels.filter((el) => el.id !== url);
+        watchedState.items = watchedState.items.filter((el) => el.channelId !== url);
         alert(i18next.t('alert.error'));
       });
   });
+
+  const updateRSS = () => {
+    const handler = (counter = 0) => {
+      if (counter < Infinity) {
+        state.items.forEach((source) => {
+          const { channelId: url } = source;
+          const urlViaProxy = `https://api.allorigins.win/get?url=${encodeURIComponent(url)}`;
+          axios
+            .get(urlViaProxy)
+            .then((response) => {
+              const rss = parseDOM(response.data.contents, 'text/xml');
+              const items = rss.querySelectorAll('item');
+              const oldItems = state.items.map((item) => item.id);
+              items.forEach((item) => {
+                const title = item.querySelector('title').textContent;
+                const id = item.querySelector('guid').textContent;
+                const link = item.querySelector('link').textContent;
+                if (!oldItems.includes(id)) {
+                  watchedState.items.unshift({
+                    channelId: url,
+                    id,
+                    title,
+                    link,
+                  });
+                }
+              });
+            })
+            .catch((err) => console.log(err));
+        });
+        setTimeout(() => handler(counter + 1), 5000);
+      }
+    };
+    handler();
+    if (state.items.length !== 0) {
+      renderFeeds();
+    }
+  };
+
+  updateRSS();
 };
