@@ -3,7 +3,7 @@ import { string, object } from 'yup';
 import i18next from 'i18next';
 import en from './locales/index.js';
 import parseDOM from './parser.js';
-import initView from './view.js';
+import { initView, renderFeeds } from './view.js';
 
 i18next.init({
   lng: 'en',
@@ -35,7 +35,7 @@ export default () => {
     subline: document.querySelector('#subline'),
     feedsContainer: document.querySelector('#feeds'),
     postsContainer: document.querySelector('#posts'),
-  }
+  };
 
   elements.button.disabled = true;
 

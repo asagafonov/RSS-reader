@@ -1,8 +1,9 @@
+import i18next from 'i18next';
 import onChange from 'on-change';
 
 const renderFeeds = (state, elements) => {
   if (state.channels.length !== 0) {
-    const feedsContainer = elements.feedsContainer;
+    const { feedsContainer } = elements;
     feedsContainer.innerHTML = '';
     const feedsTitle = document.createElement('h2');
     feedsTitle.textContent = i18next.t('pageContent.feeds');
@@ -25,8 +26,8 @@ const renderFeeds = (state, elements) => {
     });
   }
   if (state.items.length !== 0) {
-    const postsContainer = elements.postsContainer;
-    elements.postsContainer.innerHTML = '';
+    const { postsContainer } = elements;
+    postsContainer.innerHTML = '';
     const postsTitle = document.createElement('h2');
     postsTitle.textContent = i18next.t('pageContent.posts');
     postsContainer.append(postsTitle);
@@ -47,40 +48,43 @@ const renderFeeds = (state, elements) => {
   }
 };
 
-export default (state, elements) => {
+const initView = (state, elements) => {
   const watchedState = onChange(state, (path) => {
+    const { button, input, subline } = elements;
     if ((path.match(/^channels/) || path.match(/^items/))) {
       renderFeeds(state, elements);
     }
     if (state.input.inputField === 'invalid') {
-      elements.button.disabled = true;
-      elements.button.setAttribute('aria-disabled', 'true');
-      elements.input.classList.add('border');
-      elements.input.classList.add('border-danger');
-      elements.input.classList.remove('border-success');
-      elements.subline.textContent = i18next.t('validation.warning');
-      elements.subline.classList.add('text-danger');
-      elements.subline.classList.remove('text-success');
+      button.disabled = true;
+      button.setAttribute('aria-disabled', 'true');
+      input.classList.add('border');
+      input.classList.add('border-danger');
+      input.classList.remove('border-success');
+      subline.textContent = i18next.t('validation.warning');
+      subline.classList.add('text-danger');
+      subline.classList.remove('text-success');
     }
     if (state.input.inputField === 'valid') {
-      elements.button.disabled = false;
-      elements.button.removeAttribute('aria-disabled');
-      elements.input.classList.add('border-success');
-      elements.input.classList.remove('border');
-      elements.input.classList.remove('border-danger');
-      elements.subline.textContent = i18next.t('validation.success');
-      elements.subline.classList.add('text-success');
-      elements.subline.classList.remove('text-danger');
+      button.disabled = false;
+      button.removeAttribute('aria-disabled');
+      input.classList.add('border-success');
+      input.classList.remove('border');
+      input.classList.remove('border-danger');
+      subline.textContent = i18next.t('validation.success');
+      subline.classList.add('text-success');
+      subline.classList.remove('text-danger');
     }
     if (state.input.inputField === 'default') {
-      elements.button.disabled = true;
-      elements.button.setAttribute('aria-disabled', 'true');
-      elements.input.classList.remove('border');
-      elements.input.classList.remove('border-danger');
-      elements.input.classList.remove('border-success');
-      elements.subline.textContent = '';
-      elements.input.value = state.input.inputValue;
+      button.disabled = true;
+      button.setAttribute('aria-disabled', 'true');
+      input.classList.remove('border');
+      input.classList.remove('border-danger');
+      input.classList.remove('border-success');
+      subline.textContent = '';
+      input.value = state.input.inputValue;
     }
   });
   return watchedState;
 };
+
+export { renderFeeds, initView };
