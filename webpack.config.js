@@ -11,6 +11,7 @@ module.exports = {
     new HtmlWebpackPlugin({
       template: './src/index.html',
       filename: './index.html',
+      minify: false,
     }),
   ],
   module: {
@@ -25,6 +26,10 @@ module.exports = {
               presets: ['@babel/preset-env'],
             },
           },
+        },
+        {
+          test: /\.css$/,
+          use: ['style-loader', 'css-loader'],
         },
       ],
   },
