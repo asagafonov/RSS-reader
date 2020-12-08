@@ -1,15 +1,15 @@
 export default {
   translation: {
     validation: {
-      warning: 'Are you sure this is an RSS link?',
-      success: 'Looks like a valid RSS link. Now press add.',
+      warning: 'This link is invalid',
+      success: 'Feed added successfully',
+      duplication: 'This feed has already been added!',
     },
     pageContent: {
       feeds: 'Feeds',
       posts: 'Posts',
     },
-    alert: {
-      duplication: 'This feed has already been added!',
+    errors: {
       error: 'An error occurred. Please, try again.',
     },
   },
