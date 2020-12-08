@@ -51,11 +51,10 @@ const renderFeeds = (state, elements) => {
 const initView = (state, elements) => {
   const watchedState = onChange(state, (path) => {
     const { button, input, subline } = elements;
-    if ((path.match(/^feeds/) || path.match(/^posts/))) {
+    if ((path.match(/feeds/) || path.match(/posts/))) {
       renderFeeds(state, elements);
     }
     if (state.form.validation === 'invalid') {
-      button.disabled = true;
       button.setAttribute('aria-disabled', 'true');
       input.classList.add('border');
       input.classList.add('border-danger');
@@ -65,7 +64,6 @@ const initView = (state, elements) => {
       subline.classList.remove('text-success');
     }
     if (state.form.validation === 'valid') {
-      button.disabled = false;
       button.removeAttribute('aria-disabled');
       input.classList.add('border-success');
       input.classList.remove('border');
@@ -74,14 +72,14 @@ const initView = (state, elements) => {
       subline.classList.add('text-success');
       subline.classList.remove('text-danger');
     }
-    if (state.form.validation === 'unknown') {
-      button.disabled = true;
+    if (state.form.validation === 'invalid-duplication') {
       button.setAttribute('aria-disabled', 'true');
-      input.classList.remove('border');
-      input.classList.remove('border-danger');
+      input.classList.add('border');
+      input.classList.add('border-danger');
       input.classList.remove('border-success');
-      subline.textContent = '';
-      input.value = state.form.inputValue;
+      subline.textContent = i18next.t('validation.duplication');
+      subline.classList.add('text-danger');
+      subline.classList.remove('text-success');
     }
   });
   return watchedState;

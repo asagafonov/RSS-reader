@@ -13,14 +13,35 @@ i18next.init({
   },
 });
 
-const schema = object().shape({
-  inputValue: string().required().url(),
-});
+
+const validate = (state, url) => {
+  const schema = object().shape({
+    inputValue: string().required().url(),
+  });
+
+  const schemaValidation = schema.isValidSync(state.form);
+
+  const hasDuplication = (state, url) => {
+    const { feeds } = state.content;
+    const listOfUrls = feeds.map((feed) => feed.id);
+    return listOfUrls.includes(url);
+  };
+
+  if (schemaValidation) {
+    state.form.validation = 'valid';
+  }
+  if (!schemaValidation) {
+    state.form.validation = 'invalid';
+  }
+  if (hasDuplication(state, url)) {
+    state.form.validation = 'invalid-duplication';
+  }
+};
 
 export default () => {
   const state = {
     form: {
-      validation: 'unknown',
+      validation: '',
       inputValue: '',
     },
     content: {
@@ -38,36 +59,16 @@ export default () => {
     postsContainer: document.querySelector('#posts'),
   };
 
-  elements.button.disabled = true;
-
   const watched = initView(state, elements);
-
-  elements.input.addEventListener('input', (e) => {
-    watched.form.inputValue = e.target.value;
-    const validation = schema.isValidSync(watched.form);
-    if (validation) {
-      watched.form.validation = 'valid';
-    }
-    if (!validation) {
-      watched.form.validation = 'invalid';
-    }
-    if (watched.form.inputValue === '') {
-      watched.form.validation = 'unknown';
-    }
-  });
 
   elements.form.addEventListener('submit', (e) => {
     e.preventDefault();
-    const url = watched.form.inputValue;
-    watched.form.validation = 'unknown';
-    watched.form.inputValue = '';
-    /*
-    if (watched.urls.includes(url)) {
-      alert(i18next.t('alert.duplication'));
+    const url = elements.input.value;
+    watched.form.inputValue = url;
+    validate(watched, url);
+    if (watched.form.validation !== 'valid') {
       return;
     }
-    watched.urls.unshift(url);
-    */
     const urlViaProxy = `https://api.allorigins.win/get?url=${encodeURIComponent(url)}`;
     axios
       .get(urlViaProxy)
@@ -92,17 +93,11 @@ export default () => {
           });
         });
         for (let i = itemsToAdd.length - 1; i > 0; i -= 1) {
-          watched.contents.posts.unshift(itemsToAdd[i]);
+          watched.content.posts.unshift(itemsToAdd[i]);
         }
       })
       .catch((error) => {
         console.log(error);
-        /*
-        watched.urls = watched.urls.filter((el) => el !== url);
-        watched.channels = watched.channels.filter((el) => el.id !== url);
-        watched.items = watched.items.filter((el) => el.channelId !== url);
-        alert(i18next.t('alert.error'));
-        */
         throw (error);
       });
   });
