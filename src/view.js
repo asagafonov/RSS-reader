@@ -2,7 +2,7 @@ import i18next from 'i18next';
 import onChange from 'on-change';
 
 const renderFeeds = (state, elements) => {
-  if (state.channels.length !== 0) {
+  if (state.content.feeds.length !== 0) {
     const { feedsContainer } = elements;
     feedsContainer.innerHTML = '';
     const feedsTitle = document.createElement('h2');
@@ -11,7 +11,7 @@ const renderFeeds = (state, elements) => {
     const feedsList = document.createElement('ul');
     feedsList.setAttribute('class', 'list-group mb-5');
     feedsContainer.append(feedsList);
-    const feeds = state.channels;
+    const { feeds } = state.content;
     feeds.forEach((feed) => {
       const { title, description } = feed;
       const h3 = document.createElement('h3');
@@ -25,7 +25,7 @@ const renderFeeds = (state, elements) => {
       feedsList.append(li);
     });
   }
-  if (state.items.length !== 0) {
+  if (state.content.posts.length !== 0) {
     const { postsContainer } = elements;
     postsContainer.innerHTML = '';
     const postsTitle = document.createElement('h2');
@@ -34,7 +34,7 @@ const renderFeeds = (state, elements) => {
     const postsList = document.createElement('ul');
     postsList.setAttribute('class', 'list-group');
     postsContainer.append(postsList);
-    const posts = state.items;
+    const { posts } = state.content;
     posts.forEach((post) => {
       const { title, link } = post;
       const a = document.createElement('a');
@@ -51,10 +51,10 @@ const renderFeeds = (state, elements) => {
 const initView = (state, elements) => {
   const watchedState = onChange(state, (path) => {
     const { button, input, subline } = elements;
-    if ((path.match(/^channels/) || path.match(/^items/))) {
+    if ((path.match(/^feeds/) || path.match(/^posts/))) {
       renderFeeds(state, elements);
     }
-    if (state.input.inputField === 'invalid') {
+    if (state.form.validation === 'invalid') {
       button.disabled = true;
       button.setAttribute('aria-disabled', 'true');
       input.classList.add('border');
@@ -64,7 +64,7 @@ const initView = (state, elements) => {
       subline.classList.add('text-danger');
       subline.classList.remove('text-success');
     }
-    if (state.input.inputField === 'valid') {
+    if (state.form.validation === 'valid') {
       button.disabled = false;
       button.removeAttribute('aria-disabled');
       input.classList.add('border-success');
@@ -74,14 +74,14 @@ const initView = (state, elements) => {
       subline.classList.add('text-success');
       subline.classList.remove('text-danger');
     }
-    if (state.input.inputField === 'default') {
+    if (state.form.validation === 'unknown') {
       button.disabled = true;
       button.setAttribute('aria-disabled', 'true');
       input.classList.remove('border');
       input.classList.remove('border-danger');
       input.classList.remove('border-success');
       subline.textContent = '';
-      input.value = state.input.inputValue;
+      input.value = state.form.inputValue;
     }
   });
   return watchedState;

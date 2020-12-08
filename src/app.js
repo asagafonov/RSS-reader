@@ -19,13 +19,14 @@ const schema = object().shape({
 
 export default () => {
   const state = {
-    input: {
-      inputField: 'default',
+    form: {
+      validation: 'unknown',
       inputValue: '',
     },
-    urls: [],
-    channels: [],
-    items: [],
+    content: {
+      feeds: [],
+      posts: [],
+    },
   };
 
   const elements = {
@@ -42,35 +43,37 @@ export default () => {
   const watched = initView(state, elements);
 
   elements.input.addEventListener('input', (e) => {
-    watched.input.inputValue = e.target.value;
-    const validation = schema.isValidSync(watched.input);
+    watched.form.inputValue = e.target.value;
+    const validation = schema.isValidSync(watched.form);
     if (validation) {
-      watched.input.inputField = 'valid';
+      watched.form.validation = 'valid';
     }
     if (!validation) {
-      watched.input.inputField = 'invalid';
+      watched.form.validation = 'invalid';
     }
-    if (watched.input.inputValue === '') {
-      watched.input.inputField = 'default';
+    if (watched.form.inputValue === '') {
+      watched.form.validation = 'unknown';
     }
   });
 
   elements.form.addEventListener('submit', (e) => {
     e.preventDefault();
-    const url = watched.input.inputValue;
-    watched.input.inputField = 'default';
-    watched.input.inputValue = '';
+    const url = watched.form.inputValue;
+    watched.form.validation = 'unknown';
+    watched.form.inputValue = '';
+    /*
     if (watched.urls.includes(url)) {
       alert(i18next.t('alert.duplication'));
       return;
     }
     watched.urls.unshift(url);
+    */
     const urlViaProxy = `https://api.allorigins.win/get?url=${encodeURIComponent(url)}`;
     axios
       .get(urlViaProxy)
       .then((response) => {
         const rss = parseDOM(response.data.contents, 'text/xml');
-        watched.channels.unshift({
+        watched.content.feeds.unshift({
           id: url,
           title: rss.querySelector('channel > title').textContent,
           description: rss.querySelector('channel > description').textContent,
@@ -89,15 +92,17 @@ export default () => {
           });
         });
         for (let i = itemsToAdd.length - 1; i > 0; i -= 1) {
-          watched.items.unshift(itemsToAdd[i]);
+          watched.contents.posts.unshift(itemsToAdd[i]);
         }
       })
       .catch((error) => {
         console.log(error);
+        /*
         watched.urls = watched.urls.filter((el) => el !== url);
         watched.channels = watched.channels.filter((el) => el.id !== url);
         watched.items = watched.items.filter((el) => el.channelId !== url);
         alert(i18next.t('alert.error'));
+        */
         throw (error);
       });
   });
@@ -105,7 +110,7 @@ export default () => {
   const updateRSS = () => {
     const handler = (counter = 0) => {
       if (counter < Infinity) {
-        state.items.forEach((source) => {
+        watched.content.posts.forEach((source) => {
           const { channelId: url } = source;
           const urlViaProxy = `https://api.allorigins.win/get?url=${encodeURIComponent(url)}`;
           axios
@@ -113,13 +118,13 @@ export default () => {
             .then((response) => {
               const rss = parseDOM(response.data.contents, 'text/xml');
               const items = rss.querySelectorAll('item');
-              const oldItemIds = state.items.map((item) => item.id);
+              const oldItemIds = state.content.posts.map((item) => item.id);
               items.forEach((item) => {
                 const title = item.querySelector('title').textContent;
                 const id = item.querySelector('guid').textContent;
                 const link = item.querySelector('link').textContent;
                 if (!oldItemIds.includes(id)) {
-                  watched.items.unshift({
+                  watched.content.posts.unshift({
                     channelId: url,
                     id,
                     title,
@@ -137,8 +142,8 @@ export default () => {
       }
     };
     handler();
-    if (state.items.length !== 0) {
-      renderFeeds();
+    if (state.content.posts.length !== 0) {
+      renderFeeds(state, elements);
     }
   };
 
