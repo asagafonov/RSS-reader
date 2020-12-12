@@ -8,6 +8,7 @@ export default {
     pageContent: {
       feeds: 'Feeds',
       posts: 'Posts',
+      previewButton: 'Preview',
     },
     errors: {
       error: 'An error occurred. Please, try again.',
