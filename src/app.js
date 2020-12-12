@@ -2,7 +2,7 @@ import axios from 'axios';
 import { string, object } from 'yup';
 import i18next from 'i18next';
 import en from './locales/index.js';
-import parseDOM from './parser.js';
+import parseRSS from './parser.js';
 import { initView, renderFeeds } from './view.js';
 
 i18next.init({
@@ -13,29 +13,14 @@ i18next.init({
   },
 });
 
+const schema = object().shape({
+  inputValue: string().required().url(),
+});
 
-const validate = (state, url) => {
-  const schema = object().shape({
-    inputValue: string().required().url(),
-  });
-
-  const schemaValidation = schema.isValidSync(state.form);
-
-  const hasDuplication = (state, url) => {
-    const { feeds } = state.content;
-    const listOfUrls = feeds.map((feed) => feed.id);
-    return listOfUrls.includes(url);
-  };
-
-  if (schemaValidation) {
-    state.form.validation = 'valid';
-  }
-  if (!schemaValidation) {
-    state.form.validation = 'invalid';
-  }
-  if (hasDuplication(state, url)) {
-    state.form.validation = 'invalid-duplication';
-  }
+const hasDuplication = (appState, link) => {
+  const { feeds } = appState;
+  const listOfUrls = feeds.map((feed) => feed.url);
+  return listOfUrls.includes(link);
 };
 
 export default () => {
@@ -44,10 +29,7 @@ export default () => {
       validation: '',
       inputValue: '',
     },
-    content: {
-      feeds: [],
-      posts: [],
-    },
+    feeds: [],
   };
 
   const elements = {
@@ -57,6 +39,7 @@ export default () => {
     subline: document.querySelector('#subline'),
     feedsContainer: document.querySelector('#feeds'),
     postsContainer: document.querySelector('#posts'),
+    modalButtons: document.querySelectorAll('[data-toggle="modal-button"]'),
   };
 
   const watched = initView(state, elements);
@@ -65,36 +48,31 @@ export default () => {
     e.preventDefault();
     const url = elements.input.value;
     watched.form.inputValue = url;
-    validate(watched, url);
+
+    const schemaValidation = schema.isValidSync(watched.form);
+
+    if (schemaValidation) {
+      watched.form.validation = 'valid';
+    }
+    if (!schemaValidation) {
+      watched.form.validation = 'invalid';
+    }
+    if (hasDuplication(watched, url)) {
+      watched.form.validation = 'invalid-duplication';
+    }
     if (watched.form.validation !== 'valid') {
       return;
     }
+
+    elements.button.disabled = true;
+
     const urlViaProxy = `https://api.allorigins.win/get?url=${encodeURIComponent(url)}`;
     axios
       .get(urlViaProxy)
       .then((response) => {
-        const rss = parseDOM(response.data.contents, 'text/xml');
-        watched.content.feeds.unshift({
-          id: url,
-          title: rss.querySelector('channel > title').textContent,
-          description: rss.querySelector('channel > description').textContent,
-        });
-        const channelItems = rss.querySelectorAll('item');
-        const itemsToAdd = [];
-        channelItems.forEach((item) => {
-          const title = item.querySelector('title').textContent;
-          const id = item.querySelector('guid').textContent;
-          const link = item.querySelector('link').textContent;
-          itemsToAdd.push({
-            channelId: url,
-            id,
-            title,
-            link,
-          });
-        });
-        for (let i = itemsToAdd.length - 1; i > 0; i -= 1) {
-          watched.content.posts.unshift(itemsToAdd[i]);
-        }
+        const rssFeed = parseRSS(response.data.contents, 'text/xml', url);
+        watched.feeds.unshift(rssFeed);
+        elements.button.disabled = false;
       })
       .catch((error) => {
         console.log(error);
@@ -102,28 +80,35 @@ export default () => {
       });
   });
 
+  /*
+  elements.modalButtons.forEach((button) => {
+    button.addEventListener('click', () => {
+      console.log('bam1!');
+    });
+  });
+  */
+
   const updateRSS = () => {
     const handler = (counter = 0) => {
       if (counter < Infinity) {
-        watched.content.posts.forEach((source) => {
-          const { channelId: url } = source;
+        watched.feeds.forEach((currFeed) => {
+          const { url } = currFeed;
           const urlViaProxy = `https://api.allorigins.win/get?url=${encodeURIComponent(url)}`;
           axios
             .get(urlViaProxy)
             .then((response) => {
-              const rss = parseDOM(response.data.contents, 'text/xml');
-              const items = rss.querySelectorAll('item');
-              const oldItemIds = state.content.posts.map((item) => item.id);
-              items.forEach((item) => {
-                const title = item.querySelector('title').textContent;
-                const id = item.querySelector('guid').textContent;
-                const link = item.querySelector('link').textContent;
-                if (!oldItemIds.includes(id)) {
-                  watched.content.posts.unshift({
-                    channelId: url,
-                    id,
-                    title,
-                    link,
+              const rssFeed = parseRSS(response.data.contents, 'text/xml', url);
+              const currPosts = rssFeed.posts;
+              const oldPosts = currFeed.posts;
+              const oldPostsLinks = oldPosts.map((post) => post.postLink);
+              currPosts.forEach((currPost) => {
+                if (!oldPostsLinks.includes(currPost.postLink)) {
+                  const { postTitle, postLink } = currPost;
+                  currFeed.posts.unshift({
+                    feedId: currFeed.id,
+                    postId: Date.now(),
+                    postTitle,
+                    postLink,
                   });
                 }
               });
@@ -137,8 +122,8 @@ export default () => {
       }
     };
     handler();
-    if (state.content.posts.length !== 0) {
-      renderFeeds(state, elements);
+    if (watched.feeds.length !== 0) {
+      renderFeeds(watched, elements);
     }
   };
 

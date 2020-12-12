@@ -1,8 +1,12 @@
 import i18next from 'i18next';
 import onChange from 'on-change';
 
+const buildModalWindow = () => {
+
+}
+
 const renderFeeds = (state, elements) => {
-  if (state.content.feeds.length !== 0) {
+  if (state.feeds.length !== 0) {
     const { feedsContainer } = elements;
     feedsContainer.innerHTML = '';
     const feedsTitle = document.createElement('h2');
@@ -11,21 +15,19 @@ const renderFeeds = (state, elements) => {
     const feedsList = document.createElement('ul');
     feedsList.setAttribute('class', 'list-group mb-5');
     feedsContainer.append(feedsList);
-    const { feeds } = state.content;
+    const { feeds } = state;
     feeds.forEach((feed) => {
-      const { title, description } = feed;
+      const { feedTitle, feedDescription } = feed;
       const h3 = document.createElement('h3');
-      h3.textContent = title;
+      h3.textContent = feedTitle;
       const p = document.createElement('p');
-      p.textContent = description;
+      p.textContent = feedDescription;
       const li = document.createElement('li');
       li.setAttribute('class', 'list-group-item');
       li.append(h3);
       li.append(p);
       feedsList.append(li);
     });
-  }
-  if (state.content.posts.length !== 0) {
     const { postsContainer } = elements;
     postsContainer.innerHTML = '';
     const postsTitle = document.createElement('h2');
@@ -34,16 +36,26 @@ const renderFeeds = (state, elements) => {
     const postsList = document.createElement('ul');
     postsList.setAttribute('class', 'list-group');
     postsContainer.append(postsList);
-    const { posts } = state.content;
-    posts.forEach((post) => {
-      const { title, link } = post;
-      const a = document.createElement('a');
-      a.setAttribute('href', link);
-      a.textContent = title;
-      const li = document.createElement('li');
-      li.setAttribute('class', 'list-group-item');
-      li.append(a);
-      postsList.append(li);
+    feeds.forEach((feed) => {
+      const { posts } = feed;
+      posts.forEach((post) => {
+        const { postTitle, postLink } = post;
+        const a = document.createElement('a');
+        a.setAttribute('href', postLink);
+        a.textContent = postTitle;
+        const li = document.createElement('li');
+        li.setAttribute('class', 'list-group-item d-flex justify-content-between align-items-start');
+        li.append(a);
+
+        const button = document.createElement('button');
+        button.setAttribute('type', 'button');
+        button.setAttribute('class', 'btn btn-primary btn-sm');
+        button.setAttribute('data-toggle', 'modal-button');
+        button.textContent = i18next.t('pageContent.previewButton');
+        li.append(button);
+
+        postsList.append(li);
+      });
     });
   }
 };
