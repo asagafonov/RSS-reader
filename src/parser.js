@@ -5,7 +5,6 @@ export default (data, format, url) => {
   const feedTitle = rss.querySelector('channel > title').textContent;
   const feedDescription = rss.querySelector('channel > description').textContent;
   const feed = {
-    id: Date.now(),
     feedTitle,
     feedDescription,
     url,
@@ -17,11 +16,12 @@ export default (data, format, url) => {
   items.forEach((item) => {
     const postTitle = item.querySelector('title').textContent;
     const postLink = item.querySelector('link').textContent;
+    const postDescription = item.querySelector('description').textContent;
     feed.posts.unshift({
-      feedId: feed.id,
-      postId: Date.now(),
       postTitle,
+      postDescription,
       postLink,
+      status: 'unread',
     });
   });
 
