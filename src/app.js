@@ -3,7 +3,12 @@ import { string, object } from 'yup';
 import i18next from 'i18next';
 import en from './locales/index.js';
 import parseRSS from './parser.js';
-import { initView, renderFeeds } from './view.js';
+import {
+  initView,
+  renderFeeds,
+  buildModalWindow,
+  changeModalWindowContent
+} from './view.js';
 
 i18next.init({
   lng: 'en',
@@ -39,10 +44,10 @@ export default () => {
     subline: document.querySelector('#subline'),
     feedsContainer: document.querySelector('#feeds'),
     postsContainer: document.querySelector('#posts'),
-    modalButtons: document.querySelectorAll('[data-toggle="modal-button"]'),
   };
 
   const watched = initView(state, elements);
+  buildModalWindow();
 
   elements.form.addEventListener('submit', (e) => {
     e.preventDefault();
@@ -73,20 +78,23 @@ export default () => {
         const rssFeed = parseRSS(response.data.contents, 'text/xml', url);
         watched.feeds.unshift(rssFeed);
         elements.button.disabled = false;
+
+        const modalButtons = document.querySelectorAll('button[data-toggle="modal"]');
+
+        modalButtons.forEach((button) => {
+          button.addEventListener('click', (e) => {
+            const link = e.target.id;
+            const post = rssFeed.posts.filter((post) => post.postLink === link)[0];
+            const { postTitle, postDescription } = post;
+            changeModalWindowContent(postTitle, postDescription, link);
+          });
+        });
       })
       .catch((error) => {
         console.log(error);
         throw (error);
       });
   });
-
-  /*
-  elements.modalButtons.forEach((button) => {
-    button.addEventListener('click', () => {
-      console.log('bam1!');
-    });
-  });
-  */
 
   const updateRSS = () => {
     const handler = (counter = 0) => {
