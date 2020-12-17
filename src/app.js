@@ -31,6 +31,7 @@ const hasDuplication = (appState, link) => {
 export default () => {
   const state = {
     form: {
+      status: 'waiting',
       validation: '',
       inputValue: '',
     },
@@ -53,6 +54,7 @@ export default () => {
     e.preventDefault();
     const url = elements.input.value;
     watched.form.inputValue = url;
+    watched.form.status = 'sending';
 
     const schemaValidation = schema.isValidSync(watched.form);
 
@@ -77,6 +79,7 @@ export default () => {
       .then((response) => {
         const rssFeed = parseRSS(response.data.contents, 'text/xml', url);
         watched.feeds.unshift(rssFeed);
+        watched.form.status = 'loaded';
         elements.button.disabled = false;
 
         const modalButtons = document.querySelectorAll('button[data-toggle="modal"]');
@@ -84,11 +87,20 @@ export default () => {
         modalButtons.forEach((button) => {
           button.addEventListener('click', (e) => {
             const link = e.target.id;
-            const post = rssFeed.posts.filter((post) => post.postLink === link)[0];
-            const { postTitle, postDescription } = post;
-            changeModalWindowContent(postTitle, postDescription, link);
+            watched.feeds.forEach((feed) => {
+              feed.posts.forEach((post) => {
+                if (post.postLink === link) {
+                  const { postTitle, postDescription } = post;
+                  changeModalWindowContent(postTitle, postDescription, link);
+                  post.status = 'read';
+                }
+              });
+            })
           });
         });
+      })
+      .then(() => {
+        watched.form.status = 'waiting';
       })
       .catch((error) => {
         console.log(error);
@@ -110,16 +122,24 @@ export default () => {
               const oldPosts = currFeed.posts;
               const oldPostsLinks = oldPosts.map((post) => post.postLink);
               currPosts.forEach((currPost) => {
-                if (!oldPostsLinks.includes(currPost.postLink)) {
-                  const { postTitle, postLink } = currPost;
-                  currFeed.posts.unshift({
-                    feedId: currFeed.id,
-                    postId: Date.now(),
-                    postTitle,
-                    postLink,
+                const { postTitle, postDescription, postLink } = currPost;
+                if (!oldPostsLinks.includes(postLink)) {
+                  watched.feeds.forEach((feed) => {
+                    if (feed.url === url) {
+                      feed.posts.unshift({
+                        postTitle,
+                        postDescription,
+                        postLink,
+                        status: 'unread',
+                      });
+                      watched.form.status = 'loaded';
+                    };
                   });
-                }
+                };
               });
+            })
+            .then(() => {
+              watched.form.status = 'waiting';
             })
             .catch((err) => {
               console.log(err);
@@ -137,3 +157,5 @@ export default () => {
 
   updateRSS();
 };
+
+// http://lorem-rss.herokuapp.com/feed?length=2&unit=second&interval=10
