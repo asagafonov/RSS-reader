@@ -82,7 +82,7 @@ export default () => {
         const rssFeed = parseRSS(response.data.contents, 'text/xml', url);
         watched.feeds.unshift(rssFeed);
         watched.form.status = 'loaded';
-        
+
         const modalButtons = document.querySelectorAll('button[data-toggle="modal"]');
 
         modalButtons.forEach((button) => {
@@ -112,6 +112,7 @@ export default () => {
   const updateRSS = () => {
     const handler = (counter = 0) => {
       if (counter < Infinity) {
+        watched.form.status = 'waiting';
         watched.feeds.forEach((currFeed) => {
           const { url } = currFeed;
           const urlViaProxy = `https://api.allorigins.win/get?url=${encodeURIComponent(url)}`;
@@ -131,13 +132,12 @@ export default () => {
                         postTitle,
                         postDescription,
                         postLink,
-                        status: 'unread',
                       });
-                      watched.form.status = 'loaded';
                     }
                   });
                 }
               });
+              watched.form.status = 'loaded';
             })
             .then(() => {
               console.log('<system>: feed updated');
