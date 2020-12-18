@@ -4,10 +4,10 @@ import i18next from 'i18next';
 import en from './locales/index.js';
 import parseRSS from './parser.js';
 import {
-  initView,
   renderFeeds,
+  initView,
   buildModalWindow,
-  changeModalWindowContent
+  changeModalWindowContent,
 } from './view.js';
 
 i18next.init({
@@ -35,7 +35,11 @@ export default () => {
       validation: '',
       inputValue: '',
     },
+    errors: [],
     feeds: [],
+    uiState: {
+      posts: [],
+    }
   };
 
   const elements = {
@@ -71,8 +75,6 @@ export default () => {
       return;
     }
 
-    elements.button.disabled = true;
-
     const urlViaProxy = `https://api.allorigins.win/get?url=${encodeURIComponent(url)}`;
     axios
       .get(urlViaProxy)
@@ -80,22 +82,20 @@ export default () => {
         const rssFeed = parseRSS(response.data.contents, 'text/xml', url);
         watched.feeds.unshift(rssFeed);
         watched.form.status = 'loaded';
-        elements.button.disabled = false;
-
+        
         const modalButtons = document.querySelectorAll('button[data-toggle="modal"]');
 
         modalButtons.forEach((button) => {
-          button.addEventListener('click', (e) => {
-            const link = e.target.id;
+          button.addEventListener('click', (event) => {
+            const link = event.target.id;
             watched.feeds.forEach((feed) => {
               feed.posts.forEach((post) => {
                 if (post.postLink === link) {
                   const { postTitle, postDescription } = post;
                   changeModalWindowContent(postTitle, postDescription, link);
-                  post.status = 'read';
                 }
               });
-            })
+            });
           });
         });
       })
@@ -103,7 +103,8 @@ export default () => {
         watched.form.status = 'waiting';
       })
       .catch((error) => {
-        console.log(error);
+        watched.form.status = 'failed';
+        watched.errors.push(error);
         throw (error);
       });
   });
@@ -133,16 +134,17 @@ export default () => {
                         status: 'unread',
                       });
                       watched.form.status = 'loaded';
-                    };
+                    }
                   });
-                };
+                }
               });
             })
             .then(() => {
+              console.log('<system>: feed updated');
               watched.form.status = 'waiting';
             })
             .catch((err) => {
-              console.log(err);
+              watched.errors.push(err);
               throw (err);
             });
         });
@@ -150,9 +152,6 @@ export default () => {
       }
     };
     handler();
-    if (watched.feeds.length !== 0) {
-      renderFeeds(watched, elements);
-    }
   };
 
   updateRSS();
