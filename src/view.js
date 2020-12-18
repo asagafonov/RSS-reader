@@ -92,7 +92,7 @@ const renderFeeds = (state, elements) => {
     feeds.forEach((feed) => {
       const { posts } = feed;
       posts.forEach((post) => {
-        const { postTitle, postLink } = post;
+        const { postTitle, postLink, status } = post;
         const a = document.createElement('a');
         a.setAttribute('href', postLink);
         a.setAttribute('class', 'font-weight-bold');
@@ -117,10 +117,22 @@ const renderFeeds = (state, elements) => {
 };
 
 const initView = (state, elements) => {
-  const watchedState = onChange(state, (path) => {
+  const watchedState = onChange(state, () => {
     const { button, input, subline } = elements;
-    if ((path.match(/feeds/) || path.match(/posts/))) {
+    if (state.form.status === 'sending') {
+      button.disabled = true;
+    }
+    if (state.form.status === 'loaded') {
       renderFeeds(state, elements);
+      button.disabled = false;
+    }
+    if (state.form.status === 'waiting') {
+      button.disabled = false;
+    }
+    if (state.form.status === 'failed') {
+      subline.textContent = i18next.t('error.failed');
+      subline.classList.add('text-danger');
+      subline.classList.remove('text-success');
     }
     if (state.form.validation === 'invalid') {
       button.setAttribute('aria-disabled', 'true');
@@ -157,5 +169,5 @@ export {
   renderFeeds,
   initView,
   buildModalWindow,
-  changeModalWindowContent
+  changeModalWindowContent,
 };
