@@ -5,13 +5,13 @@ export default {
       success: 'Feed added successfully',
       duplication: 'This feed has already been added!',
     },
+    error: {
+      failed: 'Oops, something went wrong!',
+    },
     pageContent: {
       feeds: 'Feeds',
       posts: 'Posts',
       previewButton: 'Preview',
-    },
-    errors: {
-      error: 'An error occurred. Please, try again.',
     },
   },
 };
