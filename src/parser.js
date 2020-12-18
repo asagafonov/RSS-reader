@@ -21,7 +21,6 @@ export default (data, format, url) => {
       postTitle,
       postDescription,
       postLink,
-      status: 'unread',
     });
   });
 
