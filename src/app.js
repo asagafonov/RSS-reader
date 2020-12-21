@@ -4,10 +4,8 @@ import i18next from 'i18next';
 import en from './locales/index.js';
 import parseRSS from './parser.js';
 import {
-  renderFeeds,
   initView,
   buildModalWindow,
-  changeModalWindowContent,
 } from './view.js';
 
 i18next.init({
@@ -39,7 +37,7 @@ export default () => {
     feeds: [],
     uiState: {
       posts: [],
-    }
+    },
   };
 
   const elements = {
@@ -72,6 +70,7 @@ export default () => {
       watched.form.validation = 'invalid-duplication';
     }
     if (watched.form.validation !== 'valid') {
+      watched.form.status = 'waiting';
       return;
     }
 
@@ -81,23 +80,14 @@ export default () => {
       .then((response) => {
         const rssFeed = parseRSS(response.data.contents, 'text/xml', url);
         watched.feeds.unshift(rssFeed);
-        watched.form.status = 'loaded';
-
-        const modalButtons = document.querySelectorAll('button[data-toggle="modal"]');
-
-        modalButtons.forEach((button) => {
-          button.addEventListener('click', (event) => {
-            const link = event.target.id;
-            watched.feeds.forEach((feed) => {
-              feed.posts.forEach((post) => {
-                if (post.postLink === link) {
-                  const { postTitle, postDescription } = post;
-                  changeModalWindowContent(postTitle, postDescription, link);
-                }
-              });
-            });
+        rssFeed.posts.forEach((el) => {
+          const { postLink } = el;
+          watched.uiState.posts.push({
+            postLink,
+            status: 'unread',
           });
         });
+        watched.form.status = 'loaded';
       })
       .then(() => {
         watched.form.status = 'waiting';
@@ -133,6 +123,10 @@ export default () => {
                         postDescription,
                         postLink,
                       });
+                      watched.uiState.posts.push({
+                        postLink,
+                        status: 'unread',
+                      });
                     }
                   });
                 }
@@ -140,7 +134,6 @@ export default () => {
               watched.form.status = 'loaded';
             })
             .then(() => {
-              console.log('<system>: feed updated');
               watched.form.status = 'waiting';
             })
             .catch((err) => {
@@ -156,5 +149,3 @@ export default () => {
 
   updateRSS();
 };
-
-// http://lorem-rss.herokuapp.com/feed?length=2&unit=second&interval=10
