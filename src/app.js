@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { string, object } from 'yup';
+import * as yup from 'yup';
 import i18next from 'i18next';
 import en from './locales/index.js';
 import parseRSS from './parser.js';
@@ -8,25 +8,15 @@ import {
   buildModalWindow,
 } from './view.js';
 
-i18next.init({
-  lng: 'en',
-  debug: true,
-  resources: {
-    en,
-  },
-});
-
-const schema = object().shape({
-  inputValue: string().required().url(),
-});
-
-const hasDuplication = (appState, link) => {
-  const { feeds } = appState;
-  const listOfUrls = feeds.map((feed) => feed.url);
-  return listOfUrls.includes(link);
-};
-
 export default () => {
+  i18next.init({
+    lng: 'en',
+    debug: true,
+    resources: {
+      en,
+    },
+  });
+
   const state = {
     form: {
       status: 'waiting',
@@ -34,6 +24,7 @@ export default () => {
       inputValue: '',
     },
     errors: [],
+    urls: [],
     feeds: [],
     uiState: {
       posts: [],
@@ -54,20 +45,23 @@ export default () => {
 
   elements.form.addEventListener('submit', (e) => {
     e.preventDefault();
+    const schema = yup.string().required().url().notOneOf(watched.urls);
     const url = elements.input.value;
     watched.form.inputValue = url;
+    if (!watched.urls.includes(url)) {
+      watched.urls.push(url);
+    } else {
+      watched.form.validation = 'invalid-duplication';
+      return;
+    }
     watched.form.status = 'sending';
-
-    const schemaValidation = schema.isValidSync(watched.form);
+    const schemaValidation = schema.isValidSync(watched.form.inputValue);
 
     if (schemaValidation) {
       watched.form.validation = 'valid';
     }
     if (!schemaValidation) {
       watched.form.validation = 'invalid';
-    }
-    if (hasDuplication(watched, url)) {
-      watched.form.validation = 'invalid-duplication';
     }
     if (watched.form.validation !== 'valid') {
       watched.form.status = 'waiting';
@@ -78,7 +72,8 @@ export default () => {
     axios
       .get(urlViaProxy)
       .then((response) => {
-        const rssFeed = parseRSS(response.data.contents, 'text/xml', url);
+        const rssFeed = parseRSS(response.data.contents);
+        rssFeed.url = url;
         watched.feeds.unshift(rssFeed);
         rssFeed.posts.forEach((el) => {
           const { postLink } = el;
@@ -109,7 +104,7 @@ export default () => {
           axios
             .get(urlViaProxy)
             .then((response) => {
-              const rssFeed = parseRSS(response.data.contents, 'text/xml', url);
+              const rssFeed = parseRSS(response.data.contents);
               const currPosts = rssFeed.posts;
               const oldPosts = currFeed.posts;
               const oldPostsLinks = oldPosts.map((post) => post.postLink);
