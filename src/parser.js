@@ -1,13 +1,13 @@
-export default (data, format, url) => {
+export default (data) => {
   const domparser = new DOMParser();
-  const rss = domparser.parseFromString(data, format);
+  const rss = domparser.parseFromString(data, 'text/xml');
 
   const feedTitle = rss.querySelector('channel > title').textContent;
   const feedDescription = rss.querySelector('channel > description').textContent;
+
   const feed = {
     feedTitle,
     feedDescription,
-    url,
     posts: [],
   };
 
