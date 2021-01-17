@@ -1,5 +1,6 @@
 import axios from 'axios';
 import * as yup from 'yup';
+import _ from 'lodash';
 import i18next from 'i18next';
 import en from './locales/index.js';
 import parseRSS from './parser.js';
@@ -7,6 +8,21 @@ import {
   initView,
   buildModalWindow,
 } from './view.js';
+
+const validate = (value, state) => {
+  const schema = yup
+    .string()
+    .required()
+    .url()
+    .notOneOf(state.form.duplicationBlacklist);
+
+  try {
+    schema.validateSync(value);
+    return null;
+  } catch (err) {
+    return err.message;
+  }
+};
 
 export default () => {
   i18next.init({
@@ -20,11 +36,15 @@ export default () => {
   const state = {
     form: {
       status: 'waiting',
-      validation: '',
-      inputValue: '',
+      duplicationBlacklist: [],
+      fields: {
+        input: {
+          valid: true,
+          error: null,
+        }
+      },
     },
-    errors: [],
-    urls: [],
+    errors: null,
     feeds: [],
     uiState: {
       posts: [],
@@ -45,28 +65,26 @@ export default () => {
 
   elements.form.addEventListener('submit', (e) => {
     e.preventDefault();
-    const schema = yup.string().required().url().notOneOf(watched.urls);
     const url = elements.input.value;
-    watched.form.inputValue = url;
-    if (!watched.urls.includes(url)) {
-      watched.urls.push(url);
-    } else {
-      watched.form.validation = 'invalid-duplication';
-      return;
-    }
-    watched.form.status = 'sending';
-    const schemaValidation = schema.isValidSync(watched.form.inputValue);
+    const error = validate(url, watched);
 
-    if (schemaValidation) {
-      watched.form.validation = 'valid';
-    }
-    if (!schemaValidation) {
-      watched.form.validation = 'invalid';
-    }
-    if (watched.form.validation !== 'valid') {
-      watched.form.status = 'waiting';
+    watched.form.duplicationBlacklist.push(url);
+    watched.form.duplicationBlacklist = _.uniq(watched.form.duplicationBlacklist);
+
+    if (error) {
+      watched.form.fields.input = {
+        valid: false,
+        error,
+      };
       return;
-    }
+    };
+
+    watched.form.fields.input = {
+      valid: true,
+      error: null,
+    };
+
+    watched.form.status = 'sending';
 
     const urlViaProxy = `https://api.allorigins.win/get?url=${encodeURIComponent(url)}`;
     axios
