@@ -179,16 +179,7 @@ const initView = (state, elements) => {
       subline.classList.add('text-danger');
       subline.classList.remove('text-success');
     }
-    if (state.form.validation === 'invalid') {
-      button.setAttribute('aria-disabled', 'true');
-      input.classList.add('border');
-      input.classList.add('border-danger');
-      input.classList.remove('border-success');
-      subline.textContent = i18next.t('validation.warning');
-      subline.classList.add('text-danger');
-      subline.classList.remove('text-success');
-    }
-    if (state.form.validation === 'valid') {
+    if (state.form.fields.input.valid === true) {
       button.removeAttribute('aria-disabled');
       input.classList.add('border-success');
       input.classList.remove('border');
@@ -197,7 +188,16 @@ const initView = (state, elements) => {
       subline.classList.add('text-success');
       subline.classList.remove('text-danger');
     }
-    if (state.form.validation === 'invalid-duplication') {
+    if (state.form.fields.input.error === 'this must be a valid URL') {
+      button.setAttribute('aria-disabled', 'true');
+      input.classList.add('border');
+      input.classList.add('border-danger');
+      input.classList.remove('border-success');
+      subline.textContent = i18next.t('validation.warning');
+      subline.classList.add('text-danger');
+      subline.classList.remove('text-success');
+    }
+    if (state.form.fields.input.valid === false && state.form.fields.input.error.match(/this must not be one of the following values/)) {
       button.setAttribute('aria-disabled', 'true');
       input.classList.add('border');
       input.classList.add('border-danger');
