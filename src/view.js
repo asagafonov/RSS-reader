@@ -161,33 +161,18 @@ const renderFeeds = (state, elements) => {
   });
 };
 
-const initView = (state, elements) => {
-  const watchedState = onChange(state, () => {
-    const { button, input, subline } = elements;
-    if (state.form.status === 'sending') {
-      button.disabled = true;
-    }
-    if (state.form.status === 'loaded') {
-      renderFeeds(state, elements);
-      button.disabled = false;
-    }
-    if (state.form.status === 'waiting') {
-      button.disabled = false;
-    }
-    if (state.form.status === 'failed') {
-      subline.textContent = i18next.t('error.failed');
-      subline.classList.add('text-danger');
-      subline.classList.remove('text-success');
-    }
-    if (state.form.fields.input.valid === true) {
-      button.removeAttribute('aria-disabled');
-      input.classList.add('border-success');
-      input.classList.remove('border');
-      input.classList.remove('border-danger');
-      subline.textContent = i18next.t('validation.success');
-      subline.classList.add('text-success');
-      subline.classList.remove('text-danger');
-    }
+const renderValidationMessage = (state, elements) => {
+  const { button, input, subline } = elements;
+  if (state.form.fields.input.valid === true) {
+    button.removeAttribute('aria-disabled');
+    input.classList.add('border-success');
+    input.classList.remove('border');
+    input.classList.remove('border-danger');
+    subline.textContent = i18next.t('validation.success');
+    subline.classList.add('text-success');
+    subline.classList.remove('text-danger');
+  }
+  else {
     if (state.form.fields.input.error === 'this must be a valid URL') {
       button.setAttribute('aria-disabled', 'true');
       input.classList.add('border');
@@ -197,7 +182,7 @@ const initView = (state, elements) => {
       subline.classList.add('text-danger');
       subline.classList.remove('text-success');
     }
-    if (state.form.fields.input.valid === false && state.form.fields.input.error.match(/this must not be one of the following values/)) {
+    if (state.form.fields.input.error.match(/this must not be one of the following values/)) {
       button.setAttribute('aria-disabled', 'true');
       input.classList.add('border');
       input.classList.add('border-danger');
@@ -206,11 +191,54 @@ const initView = (state, elements) => {
       subline.classList.add('text-danger');
       subline.classList.remove('text-success');
     }
+  }
+};
+
+const renderFormStatus = (state, elements) => {
+  const { button, subline } = elements;
+  switch (state.form.status) {
+    case 'sending':
+      button.disabled = true;
+      break;
+
+    case 'loaded':
+      renderFeeds(state, elements);
+      button.disabled = false;
+      break;
+
+    case 'waiting':
+      button.disabled = false;
+      break;
+
+    case 'failed':
+      subline.textContent = i18next.t('error.failed');
+      subline.classList.add('text-danger');
+      subline.classList.remove('text-success');
+
+    default:
+      throw Error(`Unknown form status: ${form.status}`);
+  }
+};
+
+const initView = (state, elements) => {
+  elements.input.focus();
+
+  const mapping = {
+    'form.status': () => renderFormStatus(state, elements),
+    'form.fields.input': () => renderValidationMessage(state, elements),
+  };
+
+  const watchedState = onChange(state, (path) => {
+    if (mapping[path]) {
+      mapping[path]();
+    }
   });
+
   return watchedState;
 };
 
 export {
   initView,
   buildModalWindow,
+  renderFeeds,
 };
