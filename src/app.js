@@ -7,6 +7,7 @@ import parseRSS from './parser.js';
 import {
   initView,
   buildModalWindow,
+  renderFeeds,
 } from './view.js';
 
 const validate = (value, state) => {
@@ -44,7 +45,6 @@ export default () => {
         }
       },
     },
-    errors: null,
     feeds: [],
     uiState: {
       posts: [],
@@ -101,13 +101,10 @@ export default () => {
           });
         });
         watched.form.status = 'loaded';
-      })
-      .then(() => {
         watched.form.status = 'waiting';
       })
       .catch((error) => {
         watched.form.status = 'failed';
-        watched.errors.push(error);
         throw (error);
       });
   });
@@ -115,7 +112,6 @@ export default () => {
   const updateRSS = () => {
     const handler = (counter = 0) => {
       if (counter < Infinity) {
-        watched.form.status = 'waiting';
         watched.feeds.forEach((currFeed) => {
           const { url } = currFeed;
           const urlViaProxy = `https://api.allorigins.win/get?url=${encodeURIComponent(url)}`;
@@ -144,13 +140,9 @@ export default () => {
                   });
                 }
               });
-              watched.form.status = 'loaded';
-            })
-            .then(() => {
-              watched.form.status = 'waiting';
+              renderFeeds(watched, elements);
             })
             .catch((err) => {
-              watched.errors.push(err);
               throw (err);
             });
         });
