@@ -65,7 +65,8 @@ export default () => {
 
   elements.form.addEventListener('submit', (e) => {
     e.preventDefault();
-    const url = elements.input.value;
+    const formData = new FormData(e.target);
+    const url = formData.get('url');
     const error = validate(url, watched);
 
     watched.form.duplicationBlacklist.push(url);
@@ -101,12 +102,12 @@ export default () => {
           });
         });
         watched.form.status = 'loaded';
-        watched.form.status = 'waiting';
       })
       .catch((error) => {
         watched.form.status = 'failed';
         throw (error);
       });
+      watched.form.status = 'waiting';
   });
 
   const updateRSS = () => {
