@@ -161,31 +161,6 @@ const renderFeeds = (state, elements) => {
   });
 };
 
-const renderValidationErrorMessage = (state, elements) => {
-  if (state.form.fields.input.valid) return;
-
-  const { button, input, subline } = elements;
-
-  if (state.form.fields.input.error === 'this must be a valid URL') {
-    button.setAttribute('aria-disabled', 'true');
-    input.classList.add('border');
-    input.classList.add('border-danger');
-    input.classList.remove('border-success');
-    subline.textContent = i18next.t('validation.warning');
-    subline.classList.add('text-danger');
-    subline.classList.remove('text-success');
-  }
-  if (state.form.fields.input.error.match(/this must not be one of the following values/)) {
-    button.setAttribute('aria-disabled', 'true');
-    input.classList.add('border');
-    input.classList.add('border-danger');
-    input.classList.remove('border-success');
-    subline.textContent = i18next.t('validation.duplication');
-    subline.classList.add('text-danger');
-    subline.classList.remove('text-success');
-  }
-};
-
 const renderFormStatus = (state, elements) => {
   const { button, input, subline } = elements;
 
@@ -219,7 +194,34 @@ const renderFormStatus = (state, elements) => {
   }
 };
 
-const renderError = (state, elements) => {
+const renderValidationError = (state, elements) => {
+  if (state.form.fields.input.valid) return;
+
+  const { button, input, subline } = elements;
+
+  if (state.form.fields.input.error.match(/this must be a valid URL/)) {
+    button.setAttribute('aria-disabled', 'true');
+    input.classList.add('border');
+    input.classList.add('border-danger');
+    input.classList.remove('border-success');
+    input.select();
+    subline.textContent = i18next.t('validation.warning');
+    subline.classList.add('text-danger');
+    subline.classList.remove('text-success');
+  }
+  if (state.form.fields.input.error.match(/this must not be one of the following values/)) {
+    button.setAttribute('aria-disabled', 'true');
+    input.classList.add('border');
+    input.classList.add('border-danger');
+    input.classList.remove('border-success');
+    input.select();
+    subline.textContent = i18next.t('validation.duplication');
+    subline.classList.add('text-danger');
+    subline.classList.remove('text-success');
+  }
+};
+
+const renderAppError = (state, elements) => {
   if (!state.error) return;
 
   const { button, input, subline } = elements;
@@ -238,8 +240,8 @@ const initView = (state, elements) => {
 
   const mapping = {
     'form.status': () => renderFormStatus(state, elements),
-    'form.fields.input': () => renderValidationErrorMessage(state, elements),
-    error: () => renderError(state, elements),
+    'form.fields.input': () => renderValidationError(state, elements),
+    error: () => renderAppError(state, elements),
   };
 
   const watchedState = onChange(state, (path) => {

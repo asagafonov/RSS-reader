@@ -43,7 +43,7 @@ export default () => {
         input: {
           valid: true,
           error: null,
-        }
+        },
       },
     },
     feeds: [],
@@ -78,7 +78,7 @@ export default () => {
         error: validationError,
       };
       return;
-    };
+    }
 
     watched.form.fields.input = {
       valid: true,
@@ -89,6 +89,7 @@ export default () => {
     watched.form.status = 'sending';
 
     const urlViaProxy = `https://api.allorigins.win/get?url=${encodeURIComponent(url)}`;
+    
     axios
       .get(urlViaProxy)
       .then((response) => {
