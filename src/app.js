@@ -37,6 +37,7 @@ export default () => {
   const state = {
     form: {
       status: 'waiting',
+      error: null,
       duplicationBlacklist: [],
       fields: {
         input: {
@@ -65,17 +66,16 @@ export default () => {
 
   elements.form.addEventListener('submit', (e) => {
     e.preventDefault();
+
     const formData = new FormData(e.target);
     const url = formData.get('url');
-    const error = validate(url, watched);
 
-    watched.form.duplicationBlacklist.push(url);
-    watched.form.duplicationBlacklist = _.uniq(watched.form.duplicationBlacklist);
+    const validationError = validate(url, watched);
 
-    if (error) {
+    if (validationError) {
       watched.form.fields.input = {
         valid: false,
-        error,
+        error: validationError,
       };
       return;
     };
@@ -85,6 +85,7 @@ export default () => {
       error: null,
     };
 
+    watched.error = null;
     watched.form.status = 'sending';
 
     const urlViaProxy = `https://api.allorigins.win/get?url=${encodeURIComponent(url)}`;
@@ -102,11 +103,15 @@ export default () => {
           });
         });
         watched.form.status = 'loaded';
+        watched.form.duplicationBlacklist.push(url);
+        watched.form.duplicationBlacklist = _.uniq(watched.form.duplicationBlacklist);
       })
       .catch((error) => {
+        watched.error = error.message;
         watched.form.status = 'failed';
-        throw (error);
+        console.log(error.message);
       });
+
       watched.form.status = 'waiting';
   });
 
@@ -143,9 +148,7 @@ export default () => {
               });
               renderFeeds(watched, elements);
             })
-            .catch((err) => {
-              throw (err);
-            });
+            .catch((updateError) => console.log(updateError.message));
         });
         setTimeout(() => handler(counter + 1), 5000);
       }

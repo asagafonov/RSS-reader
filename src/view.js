@@ -161,63 +161,81 @@ const renderFeeds = (state, elements) => {
   });
 };
 
-const renderValidationMessage = (state, elements) => {
+const renderValidationErrorMessage = (state, elements) => {
+  if (state.form.fields.input.valid) return;
+
   const { button, input, subline } = elements;
-  if (state.form.fields.input.valid === true) {
-    button.removeAttribute('aria-disabled');
-    input.classList.add('border-success');
-    input.classList.remove('border');
-    input.classList.remove('border-danger');
-    subline.textContent = i18next.t('validation.success');
-    subline.classList.add('text-success');
-    subline.classList.remove('text-danger');
+
+  if (state.form.fields.input.error === 'this must be a valid URL') {
+    button.setAttribute('aria-disabled', 'true');
+    input.classList.add('border');
+    input.classList.add('border-danger');
+    input.classList.remove('border-success');
+    subline.textContent = i18next.t('validation.warning');
+    subline.classList.add('text-danger');
+    subline.classList.remove('text-success');
   }
-  else {
-    if (state.form.fields.input.error === 'this must be a valid URL') {
-      button.setAttribute('aria-disabled', 'true');
-      input.classList.add('border');
-      input.classList.add('border-danger');
-      input.classList.remove('border-success');
-      subline.textContent = i18next.t('validation.warning');
-      subline.classList.add('text-danger');
-      subline.classList.remove('text-success');
-    }
-    if (state.form.fields.input.error.match(/this must not be one of the following values/)) {
-      button.setAttribute('aria-disabled', 'true');
-      input.classList.add('border');
-      input.classList.add('border-danger');
-      input.classList.remove('border-success');
-      subline.textContent = i18next.t('validation.duplication');
-      subline.classList.add('text-danger');
-      subline.classList.remove('text-success');
-    }
+  if (state.form.fields.input.error.match(/this must not be one of the following values/)) {
+    button.setAttribute('aria-disabled', 'true');
+    input.classList.add('border');
+    input.classList.add('border-danger');
+    input.classList.remove('border-success');
+    subline.textContent = i18next.t('validation.duplication');
+    subline.classList.add('text-danger');
+    subline.classList.remove('text-success');
   }
 };
 
 const renderFormStatus = (state, elements) => {
-  const { button, subline } = elements;
+  const { button, input, subline } = elements;
+
   switch (state.form.status) {
     case 'sending':
       button.disabled = true;
+      input.disabled = true;
       break;
 
     case 'loaded':
-      renderFeeds(state, elements);
+      button.removeAttribute('aria-disabled');
+      input.classList.add('border-success');
+      input.classList.remove('border');
+      input.classList.remove('border-danger');
+      subline.textContent = i18next.t('validation.success');
+      subline.classList.add('text-success');
+      subline.classList.remove('text-danger');
       button.disabled = false;
+      input.disabled = false;
+      renderFeeds(state, elements);
       break;
 
     case 'waiting':
       button.disabled = false;
+      input.disabled = false;
       break;
 
     case 'failed':
-      subline.textContent = i18next.t('error.failed');
-      subline.classList.add('text-danger');
-      subline.classList.remove('text-success');
+      button.disabled = false;
+      input.disabled = false;
+      input.select();
+      break;
 
     default:
-      throw Error(`Unknown form status: ${form.status}`);
+      throw Error(`Unknown form status: ${state.form.status}`);
   }
+};
+
+const renderError = (state, elements) => {
+  if (!state.error) return;
+
+  const { button, input, subline } = elements;
+
+  button.setAttribute('aria-disabled', 'true');
+  input.classList.add('border');
+  input.classList.add('border-danger');
+  input.classList.remove('border-success');
+  subline.textContent = i18next.t('error.failed');
+  subline.classList.add('text-danger');
+  subline.classList.remove('text-success');
 };
 
 const initView = (state, elements) => {
@@ -225,7 +243,8 @@ const initView = (state, elements) => {
 
   const mapping = {
     'form.status': () => renderFormStatus(state, elements),
-    'form.fields.input': () => renderValidationMessage(state, elements),
+    'form.fields.input': () => renderValidationErrorMessage(state, elements),
+    error: () => renderError(state, elements),
   };
 
   const watchedState = onChange(state, (path) => {
