@@ -196,21 +196,16 @@ const renderFormStatus = (state, elements) => {
       break;
 
     case 'loaded':
+      button.disabled = false;
       button.removeAttribute('aria-disabled');
+      input.disabled = false;
       input.classList.add('border-success');
       input.classList.remove('border');
       input.classList.remove('border-danger');
       subline.textContent = i18next.t('validation.success');
       subline.classList.add('text-success');
       subline.classList.remove('text-danger');
-      button.disabled = false;
-      input.disabled = false;
       renderFeeds(state, elements);
-      break;
-
-    case 'waiting':
-      button.disabled = false;
-      input.disabled = false;
       break;
 
     case 'failed':

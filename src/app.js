@@ -36,7 +36,7 @@ export default () => {
 
   const state = {
     form: {
-      status: 'waiting',
+      status: '',
       error: null,
       duplicationBlacklist: [],
       fields: {
@@ -111,8 +111,6 @@ export default () => {
         watched.form.status = 'failed';
         console.log(error.message);
       });
-
-      watched.form.status = 'waiting';
   });
 
   const updateRSS = () => {
