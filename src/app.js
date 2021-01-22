@@ -10,6 +10,51 @@ import {
   renderFeeds,
 } from './view.js';
 
+const updatePosts = (state, post, links, url) => {
+  const { postTitle, postDescription, postLink } = post;
+  if (!links.includes(postLink)) {
+    state.feeds.forEach((feed) => {
+      if (feed.url === url) {
+        feed.posts.unshift({
+          postTitle,
+          postDescription,
+          postLink,
+        });
+        state.uiState.posts.push({
+          postLink,
+          status: 'unread',
+        });
+      }
+    });
+  }
+};
+
+const updateFeed = (state, feed, elements) => {
+  const { url } = feed;
+  const urlViaProxy = `https://api.allorigins.win/get?url=${encodeURIComponent(url)}`;
+  axios
+    .get(urlViaProxy)
+    .then((response) => {
+      const rssFeed = parseRSS(response.data.contents);
+      const currPosts = rssFeed.posts;
+      const oldPosts = feed.posts;
+      const oldPostsLinks = oldPosts.map((post) => post.postLink);
+      currPosts.forEach((currPost) => updatePosts(state, currPost, oldPostsLinks, url));
+      renderFeeds(state, elements);
+    })
+    .catch((updateError) => console.log(updateError));
+};
+
+const updateRSS = (state, elements) => {
+  const handler = (counter = 0) => {
+    if (counter < Infinity) {
+      state.feeds.forEach((currFeed) => updateFeed(state, currFeed, elements));
+      setTimeout(() => handler(counter + 1), 5000);
+    }
+  };
+  handler();
+};
+
 const validate = (value, blacklist = []) => {
   const schema = yup
     .string()
@@ -110,50 +155,9 @@ export default () => {
       .catch((error) => {
         watched.error = error.message;
         watched.form.status = 'failed';
-        console.log(error.message);
+        console.log(error);
       });
   });
 
-  const updateRSS = () => {
-    const handler = (counter = 0) => {
-      if (counter < Infinity) {
-        watched.feeds.forEach((currFeed) => {
-          const { url } = currFeed;
-          const urlViaProxy = `https://api.allorigins.win/get?url=${encodeURIComponent(url)}`;
-          axios
-            .get(urlViaProxy)
-            .then((response) => {
-              const rssFeed = parseRSS(response.data.contents);
-              const currPosts = rssFeed.posts;
-              const oldPosts = currFeed.posts;
-              const oldPostsLinks = oldPosts.map((post) => post.postLink);
-              currPosts.forEach((currPost) => {
-                const { postTitle, postDescription, postLink } = currPost;
-                if (!oldPostsLinks.includes(postLink)) {
-                  watched.feeds.forEach((feed) => {
-                    if (feed.url === url) {
-                      feed.posts.unshift({
-                        postTitle,
-                        postDescription,
-                        postLink,
-                      });
-                      watched.uiState.posts.push({
-                        postLink,
-                        status: 'unread',
-                      });
-                    }
-                  });
-                }
-              });
-              renderFeeds(watched, elements);
-            })
-            .catch((updateError) => console.log(updateError.message));
-        });
-        setTimeout(() => handler(counter + 1), 5000);
-      }
-    };
-    handler();
-  };
-
-  updateRSS();
+  updateRSS(watched, elements);
 };
