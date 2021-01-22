@@ -10,12 +10,12 @@ import {
   renderFeeds,
 } from './view.js';
 
-const validate = (value, state) => {
+const validate = (value, blacklist = []) => {
   const schema = yup
     .string()
     .required()
     .url()
-    .notOneOf(state.form.duplicationBlacklist);
+    .notOneOf(blacklist);
 
   try {
     schema.validateSync(value);
@@ -70,7 +70,7 @@ export default () => {
     const formData = new FormData(e.target);
     const url = formData.get('url');
 
-    const validationError = validate(url, watched);
+    const validationError = validate(url, watched.form.duplicationBlacklist);
 
     if (validationError) {
       watched.form.fields.input = {
@@ -89,7 +89,7 @@ export default () => {
     watched.form.status = 'sending';
 
     const urlViaProxy = `https://api.allorigins.win/get?url=${encodeURIComponent(url)}`;
-    
+
     axios
       .get(urlViaProxy)
       .then((response) => {
