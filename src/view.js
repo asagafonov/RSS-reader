@@ -58,6 +58,17 @@ const changeModalWindowContent = (title, description, link) => {
   goToArticleButton.setAttribute('href', link);
 };
 
+const setLinkWeight = (post, aEl, link) => {
+  if (post.postLink === link) {
+    if (post.status === 'read') {
+      aEl.setAttribute('class', 'font-weight-regular');
+    }
+    if (post.status === 'unread') {
+      aEl.setAttribute('class', 'font-weight-bold');
+    }
+  }
+};
+
 const changePostStatus = (posts, link) => {
   posts.forEach((post) => {
     if (post.postLink === link) {
@@ -104,16 +115,7 @@ const renderFeeds = (state, elements) => {
       const a = document.createElement('a');
       a.setAttribute('href', postLink);
       const postsToCheck = state.uiState.posts;
-      postsToCheck.forEach((p) => {
-        if (p.postLink === postLink) {
-          if (p.status === 'read') {
-            a.setAttribute('class', 'font-weight-regular');
-          }
-          if (p.status === 'unread') {
-            a.setAttribute('class', 'font-weight-bold');
-          }
-        }
-      });
+      postsToCheck.forEach((p) => setLinkWeight(p, a, postLink));
       a.textContent = postTitle;
       const li = document.createElement('li');
       li.setAttribute('class', 'list-group-item d-flex justify-content-between align-items-start');
