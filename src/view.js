@@ -78,6 +78,9 @@ const changePostStatus = (posts, link) => {
 };
 
 const renderFeeds = (state, elements) => {
+  if (state.feeds.length === 0) {
+    return;
+  }
   const { feedsContainer } = elements;
   feedsContainer.innerHTML = '';
   const feedsTitle = document.createElement('h2');
@@ -243,6 +246,7 @@ const initView = (state, elements) => {
   const mapping = {
     'form.status': () => renderFormStatus(state, elements),
     'form.fields.input': () => renderValidationError(state, elements),
+    'updateCount': () => renderFeeds(state, elements),
     error: () => renderAppError(state, elements),
   };
 
@@ -258,5 +262,4 @@ const initView = (state, elements) => {
 export {
   initView,
   buildModalWindow,
-  renderFeeds,
 };
