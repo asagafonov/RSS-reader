@@ -1,6 +1,5 @@
 import axios from 'axios';
 import * as yup from 'yup';
-import _ from 'lodash';
 import i18next from 'i18next';
 import en from './locales/index.js';
 import parseRSS from './parser.js';
@@ -33,9 +32,8 @@ export default () => {
 
   const state = {
     form: {
-      status: '',
+      status: 'waiting',
       error: null,
-      duplicationBlacklist: [],
       fields: {
         input: {
           valid: true,
@@ -43,6 +41,7 @@ export default () => {
         },
       },
     },
+    updateCount: 0,
     feeds: [],
     uiState: {
       posts: [],
@@ -67,7 +66,8 @@ export default () => {
     const formData = new FormData(e.target);
     const url = formData.get('url');
 
-    const validationError = validate(url, watched.form.duplicationBlacklist);
+    const duplicationBlacklist = watched.feeds.map((feed) => feed.url);
+    const validationError = validate(url, duplicationBlacklist);
 
     if (validationError) {
       watched.form.fields.input = {
@@ -101,8 +101,6 @@ export default () => {
           });
         });
         watched.form.status = 'loaded';
-        watched.form.duplicationBlacklist.push(url);
-        watched.form.duplicationBlacklist = _.uniq(watched.form.duplicationBlacklist);
       })
       .catch((error) => {
         watched.error = error.message;
