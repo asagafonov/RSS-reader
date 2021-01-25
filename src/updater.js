@@ -1,5 +1,4 @@
 import axios from 'axios';
-import { renderFeeds } from './view.js';
 import parseRSS from './parser.js';
 
 const updatePosts = (state, post, links, url) => {
@@ -32,19 +31,17 @@ const updateFeed = (state, feed, elements) => {
       const oldPosts = feed.posts;
       const oldPostsLinks = oldPosts.map((post) => post.postLink);
       currPosts.forEach((currPost) => updatePosts(state, currPost, oldPostsLinks, url));
-      renderFeeds(state, elements);
     })
     .catch((updateError) => console.log(updateError));
 };
 
 const updateRSS = (state, elements) => {
-  const handler = (counter = 0) => {
-    if (counter < Infinity) {
+  const initiateUpdate = () => {
       state.feeds.forEach((currFeed) => updateFeed(state, currFeed, elements));
-      setTimeout(() => handler(counter + 1), 5000);
-    }
+      state.updateCount += 1;
+      setTimeout(() => initiateUpdate(), 5000);
   };
-  handler();
+  initiateUpdate();
 };
 
 export default updateRSS;
