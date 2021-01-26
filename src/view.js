@@ -1,52 +1,32 @@
 import i18next from 'i18next';
 import onChange from 'on-change';
 
+const modalInnerElements = [
+  '<div class="modal-dialog">',
+  '  <div class="modal-content">',
+  '    <div class="modal-header">',
+  '      <h5 class="modal-title"></h5>',
+  '      <button type="button" class="close" data-dismiss="modal" aria-label="Close">',
+  '        <span aria-hidden="true">x</span>',
+  '      </button>',
+  '    </div>',
+  '    <div class="modal-body"></div>',
+  '    <div class="modal-footer">',
+  '      <a class="btn btn-primary" role="button" id="modal-forward" href="">Full article</a>',
+  '      <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>',
+  '    </div>',
+  '  </div>',
+  '</div>',
+];
+
 const buildModalWindow = () => {
+  const body = document.querySelector('body');
   const modalWindow = document.createElement('div');
   modalWindow.setAttribute('id', 'modal');
   modalWindow.setAttribute('class', 'modal fade hide');
-  const modalDialog = document.createElement('div');
-  modalDialog.setAttribute('class', 'modal-dialog');
-  modalWindow.append(modalDialog);
-  const modalContent = document.createElement('div');
-  modalContent.setAttribute('class', 'modal-content');
-  modalDialog.append(modalContent);
-  const modalHeader = document.createElement('div');
-  modalHeader.setAttribute('class', 'modal-header');
-  modalContent.append(modalHeader);
-  const header = document.createElement('h5');
-  header.setAttribute('class', 'modal-title');
-  const closeButton = document.createElement('button');
-  closeButton.setAttribute('type', 'button');
-  closeButton.setAttribute('class', 'close');
-  closeButton.setAttribute('data-dismiss', 'modal');
-  closeButton.setAttribute('aria-label', 'Close');
-  const buttonX = document.createElement('span');
-  buttonX.setAttribute('aria-hidden', 'true');
-  buttonX.textContent = 'x';
-  closeButton.append(buttonX);
-  modalHeader.append(header);
-  modalHeader.append(closeButton);
-  const modalBody = document.createElement('div');
-  modalBody.setAttribute('class', 'modal-body');
-  modalContent.append(modalBody);
-  const modalFooter = document.createElement('div');
-  modalFooter.setAttribute('class', 'modal-footer');
-  const fullArticleButton = document.createElement('a');
-  fullArticleButton.textContent = 'Full article';
-  fullArticleButton.setAttribute('class', 'btn btn-primary');
-  fullArticleButton.setAttribute('role', 'button');
-  fullArticleButton.setAttribute('id', 'modal-forward');
-  const closeWindowButton = document.createElement('button');
-  closeWindowButton.setAttribute('type', 'button');
-  closeWindowButton.setAttribute('class', 'btn btn-secondary');
-  closeWindowButton.setAttribute('data-dismiss', 'modal');
-  closeWindowButton.textContent = 'Close';
-  modalFooter.append(fullArticleButton);
-  modalFooter.append(closeWindowButton);
-  modalContent.append(modalFooter);
-  const body = document.querySelector('body');
   body.prepend(modalWindow);
+  const modalContent = modalInnerElements.join('\n');
+  modalWindow.innerHTML = modalContent;
 };
 
 const changeModalWindowContent = (title, description, link) => {
@@ -246,7 +226,7 @@ const initView = (state, elements) => {
   const mapping = {
     'form.status': () => renderFormStatus(state, elements),
     'form.fields.input': () => renderValidationError(state, elements),
-    'updateCount': () => renderFeeds(state, elements),
+    updateCount: () => renderFeeds(state, elements),
     error: () => renderAppError(state, elements),
   };
 
