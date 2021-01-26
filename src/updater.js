@@ -20,7 +20,7 @@ const updatePosts = (state, post, links, url) => {
   }
 };
 
-const updateFeed = (state, feed, elements) => {
+const updateFeed = (state, feed) => {
   const { url } = feed;
   const urlViaProxy = `https://api.allorigins.win/get?url=${encodeURIComponent(url)}`;
   axios
@@ -35,11 +35,11 @@ const updateFeed = (state, feed, elements) => {
     .catch((updateError) => console.log(updateError));
 };
 
-const updateRSS = (state, elements) => {
+const updateRSS = (state) => {
   const initiateUpdate = () => {
-      state.feeds.forEach((currFeed) => updateFeed(state, currFeed, elements));
-      state.updateCount += 1;
-      setTimeout(() => initiateUpdate(), 5000);
+    state.feeds.forEach((currFeed) => updateFeed(state, currFeed));
+    state.updateCount += 1; // eslint-disable-line no-param-reassign
+    setTimeout(() => initiateUpdate(), 5000);
   };
   initiateUpdate();
 };
