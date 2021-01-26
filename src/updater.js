@@ -22,7 +22,7 @@ const updatePosts = (state, post, links, url) => {
 
 const updateFeed = (state, feed) => {
   const { url } = feed;
-  const urlViaProxy = `https://api.allorigins.win/get?url=${encodeURIComponent(url)}`;
+  const urlViaProxy = `https://hexlet-allorigins.herokuapp.com/get?url=${encodeURIComponent(url)}`;
   axios
     .get(urlViaProxy)
     .then((response) => {

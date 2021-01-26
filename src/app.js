@@ -85,7 +85,7 @@ export default () => {
     watched.error = null;
     watched.form.status = 'sending';
 
-    const urlViaProxy = `https://api.allorigins.win/get?url=${encodeURIComponent(url)}`;
+    const urlViaProxy = `https://hexlet-allorigins.herokuapp.com/get?url=${encodeURIComponent(url)}`;
 
     axios
       .get(urlViaProxy)
