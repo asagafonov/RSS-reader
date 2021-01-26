@@ -109,5 +109,5 @@ export default () => {
       });
   });
 
-  updateRSS(watched, elements);
+  updateRSS(watched);
 };
