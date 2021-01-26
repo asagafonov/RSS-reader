@@ -17,7 +17,7 @@ export default (data) => {
     const postTitle = item.querySelector('title').textContent;
     const postLink = item.querySelector('link').textContent;
     const postDescription = item.querySelector('description').textContent;
-    feed.posts.unshift({
+    feed.posts.push({
       postTitle,
       postDescription,
       postLink,
