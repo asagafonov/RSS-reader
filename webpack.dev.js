@@ -1,36 +1,26 @@
 const path = require('path');
+const { merge } = require('webpack-merge');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
+const common = require('./webpack.common.js');
 
-module.exports = {
-  entry: './src/index.js',
+module.exports = merge(common, {
+  mode: 'development',
   output: {
+    filename: '[name].bundle.js',
     path: path.resolve(__dirname, 'dist'),
-    filename: 'main.js',
   },
   plugins: [
     new HtmlWebpackPlugin({
       template: './src/index.html',
-      filename: './index.html',
-      minify: false,
     }),
   ],
   module: {
     rules:
       [
         {
-          test: /\.m?js$/,
-          exclude: /node_modules/,
-          use: {
-            loader: 'babel-loader',
-            options: {
-              presets: ['@babel/preset-env'],
-            },
-          },
-        },
-        {
           test: /\.css$/,
           use: ['style-loader', 'css-loader'],
         },
       ],
   },
-};
+});

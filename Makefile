@@ -4,14 +4,11 @@ install:
 build:
 	npm run build
 
+start:
+	npm start
+
 publish:
 	npm publish --dry-run
 
 lint:
 	npx eslint .
-
-jest:
-	npx jest
-
-test-coverage:
-	npm test -- --coverage --coverageProvider=v8
