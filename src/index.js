@@ -1,7 +1,6 @@
-/* eslint-disable no-unused-expressions */
-import app from './app.js';
+import runApp from './app.js';
+import './style.css';
 
-import('bootstrap/dist/css/bootstrap.min.css');
-import('bootstrap/js/dist/modal');
+import('bootstrap/js/dist/modal'); // eslint-disable-line no-unused-expressions
 
-app();
+runApp();
