@@ -4,8 +4,8 @@ install:
 build:
 	npm run build
 
-start:
-	npm start
+dev:
+	npm run dev
 
 publish:
 	npm publish --dry-run
